@@ -48,8 +48,9 @@ min_confidence = "low"
 # Glob patterns (relative to the scan root) to exclude.
 exclude = []
 
-# Skip #[cfg(test)] items and test directories.
-exclude_tests = false
+# Skip #[cfg(test)] items and test directories (default). Set false to include
+# test-only code.
+exclude_tests = true
 
 # Exclude files marked generated (`// @generated` or `include!`) instead of
 # marking them. Defaults to false: generated files are always reported.
@@ -325,9 +326,13 @@ struct ScanArgs {
     #[arg(long = "exclude", value_name = "GLOB")]
     exclude: Vec<String>,
 
-    /// Skip items gated behind `#[cfg(test)]` and test directories.
-    #[arg(long)]
+    /// Skip items gated behind `#[cfg(test)]` and test directories (default).
+    #[arg(long, conflicts_with = "include_tests")]
     exclude_tests: bool,
+
+    /// Include items gated behind `#[cfg(test)]` and test directories.
+    #[arg(long, conflicts_with = "exclude_tests")]
+    include_tests: bool,
 
     /// Best-effort per-rule execution budget in milliseconds. A rule that
     /// overruns is reported and its findings are discarded. Disabled by default.
@@ -609,7 +614,12 @@ fn run_scan(args: ScanArgs, registry: &RuleRegistry) -> CliResult<u8> {
         config.min_confidence = confidence;
     }
     config.exclude.extend(args.exclude.iter().cloned());
-    config.exclude_tests |= args.exclude_tests;
+    if args.exclude_tests {
+        config.exclude_tests = true;
+    }
+    if args.include_tests {
+        config.exclude_tests = false;
+    }
     config.rules.disabled.extend(args.disable.iter().cloned());
     config.rules.enabled.extend(args.rule.iter().cloned());
     if let Some(budget) = args.rule_time_budget_ms {

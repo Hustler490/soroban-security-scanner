@@ -42,8 +42,9 @@ min_confidence = "low"
 # Glob patterns (relative to the scan root) to exclude from discovery
 exclude = ["vendor/**", "target/**"]
 
-# Skip #[cfg(test)] items and test directories
-exclude_tests = false
+# Skip #[cfg(test)] items and test directories (default). Set false to include
+# test-only code.
+exclude_tests = true
 
 # Follow symbolic links during discovery (disabled by default for safety)
 follow_symlinks = false
@@ -102,7 +103,7 @@ max_output_tokens = 1024
 | `min_severity` | severity | `info` | Minimum severity to report. |
 | `min_confidence` | confidence | `low` | Minimum confidence to report. |
 | `exclude` | array of globs | `[]` | Paths excluded from discovery. |
-| `exclude_tests` | bool | `false` | Skip `#[cfg(test)]` items and directories named `tests`. |
+| `exclude_tests` | bool | `true` | Skip `#[cfg(test)]` items and directories named `tests`. Set to `false` to include test-only code. |
 | `follow_symlinks` | bool | `false` | Follow symlinks (off by default for safety). |
 | `minimum_soroban_sdk` | string | `21.0.0` | Minimum supported `soroban-sdk` version for SS-015. |
 | `rules.disabled` | array of ids | `[]` | Rules never run. |

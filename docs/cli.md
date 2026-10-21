@@ -56,7 +56,8 @@ roots in one run.
 | `--min-confidence <LEVEL>` | Only report findings at or above this confidence. |
 | `--max-findings <N>` | Report at most N findings after sorting; the exit gate is unaffected and the report states how many were omitted. |
 | `--exclude <GLOB>` | Exclude a glob relative to the scan root (repeatable). |
-| `--exclude-tests` | Skip items gated behind `#[cfg(test)]` and files in test directories. |
+| `--exclude-tests` | Skip items gated behind `#[cfg(test)]` and files in test directories (the default). |
+| `--include-tests` | Include items gated behind `#[cfg(test)]` and test directories. |
 | `--config <FILE>` | Use a specific configuration file. |
 | `--no-config` | Ignore discovered configuration and use built-in defaults (mutually exclusive with `--config`). |
 | `--files-from <FILE>` | Read a newline-separated list of files to scan (relative to `PATH`). |
@@ -116,17 +117,26 @@ from the `--fail-on` gate but never dropped from the report: terminal, JSON,
 SARIF and Markdown output all list them together with the directive that
 suppressed them. See [Inline Suppressions](suppressions.md).
 
-### Excluding test code
+### Test-only code
 
-`--exclude-tests` removes the most common source of noise in one step:
+Test-only code is excluded by default, because it is not shipped:
 
 - Items gated behind `#[cfg(test)]` (including entire `#[cfg(test)] mod tests`
   blocks) are pruned before analysis.
 - Directories named `tests` are skipped during discovery.
 - Production code is never excluded; `#[cfg(not(test))]` items are kept.
 
+Set `exclude_tests = false` in the configuration file, or pass
+`--include-tests`, to scan test-only code. The inventory records the raw `cfg`
+predicates on items and functions (for example `test` or `feature = "x"`)
+without evaluating them, so reports can describe conditionality honestly.
+
 ```bash
-soroban-scan scan ./contracts --exclude-tests
+# Default: skip test-only code
+soroban-scan scan ./contracts
+
+# Include it for a test-oriented review
+soroban-scan scan ./contracts --include-tests
 ```
 
 ### GitHub workflow annotations

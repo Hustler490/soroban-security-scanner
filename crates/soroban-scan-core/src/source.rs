@@ -184,6 +184,9 @@ pub struct FunctionSummary {
     pub attributes: Vec<String>,
     /// Joined doc-comment text (`///` or `#[doc = "..."]`), if any.
     pub doc: String,
+    /// Raw `cfg` predicates on the function and its enclosing impl/trait,
+    /// without evaluating them (for example `test` or `feature = "x"`).
+    pub cfg: Vec<String>,
     /// Parameters.
     pub params: Vec<ParamSummary>,
     /// Rendered return type, if not `()`.
@@ -226,6 +229,8 @@ pub struct ItemSummary {
     pub attributes: Vec<String>,
     /// Joined doc-comment text (`///` or `#[doc = "..."]`), if any.
     pub doc: String,
+    /// Raw `cfg` predicates on the item, without evaluating them.
+    pub cfg: Vec<String>,
 }
 
 /// A `macro_rules!` definition found in a source file.
@@ -425,6 +430,23 @@ fn doc_comments(attrs: &[syn::Attribute]) -> String {
     lines.join("\n").trim().to_string()
 }
 
+/// Returns the raw tokens inside each `#[cfg(...)]` predicate.
+///
+/// Predicates are recorded as written and never evaluated: `test` stays
+/// `test`, `feature = "x"` stays `feature = "x"`, and `not(test)` is not
+/// simplified. This lets detectors and reports describe conditionality without
+/// pretending to know the build configuration.
+fn cfg_predicates(attrs: &[syn::Attribute]) -> Vec<String> {
+    attrs
+        .iter()
+        .filter(|attr| attribute_path(attr) == "cfg")
+        .map(|attr| match &attr.meta {
+            syn::Meta::List(list) => list.tokens.to_string(),
+            meta => meta.to_token_stream().to_string(),
+        })
+        .collect()
+}
+
 fn vis_is_public(vis: &syn::Visibility) -> bool {
     matches!(vis, syn::Visibility::Public(_))
 }
@@ -518,6 +540,7 @@ struct ImplContext {
     name: String,
     trait_path: Option<String>,
     attributes: Vec<String>,
+    cfg: Vec<String>,
 }
 
 fn qualified_name(name: &str, prefix: &str, impl_ctx: Option<&ImplContext>) -> String {
@@ -547,6 +570,10 @@ fn make_function(
             )
         });
     let (line, column) = span_start(sig);
+    let mut cfg = cfg_predicates(attrs);
+    if let Some(ctx) = impl_ctx {
+        cfg.extend(ctx.cfg.iter().cloned());
+    }
     FunctionSummary {
         name,
         qualified_name,
@@ -557,6 +584,7 @@ fn make_function(
         is_async: sig.asyncness.is_some(),
         attributes: attribute_paths(attrs),
         doc: doc_comments(attrs),
+        cfg,
         params: params_of(sig),
         return_type: return_of(sig),
         in_impl: impl_ctx.map(|c| c.name.clone()),
@@ -650,6 +678,7 @@ fn walk_items(
                     name,
                     trait_path,
                     attributes: attribute_paths(&attrs),
+                    cfg: cfg_predicates(&attrs),
                 };
                 for impl_item in &imp.items {
                     match impl_item {
@@ -710,6 +739,7 @@ fn walk_items(
                     name,
                     trait_path: None,
                     attributes: attribute_paths(&attrs),
+                    cfg: cfg_predicates(&attrs),
                 };
                 for trait_item in &tr.items {
                     match trait_item {
@@ -950,6 +980,7 @@ fn item_summary(
         trait_path: None,
         attributes: attribute_paths(attrs),
         doc: doc_comments(attrs),
+        cfg: cfg_predicates(attrs),
     }
 }
 
@@ -2407,6 +2438,49 @@ mod tests {
         assert_eq!(lf.functions[0].end_line, crlf.functions[0].end_line);
         assert_eq!(lf.functions[0].line, crlf.functions[0].line);
         assert_eq!(lf.functions[0].column, crlf.functions[0].column);
+    }
+
+    #[test]
+    fn records_raw_cfg_predicates_without_evaluating_them() {
+        let src = r#"
+#[cfg(feature = "extra")]
+struct Gated;
+
+#[cfg(test)]
+impl Vault {
+    fn test_only(&self) {}
+}
+
+#[cfg(test)]
+fn direct_test() {}
+
+fn always() {}
+"#;
+        let s = parse(src);
+
+        let gated = s.items.iter().find(|item| item.name == "Gated").unwrap();
+        assert_eq!(gated.cfg, vec!["feature = \"extra\""]);
+
+        let test_only = s
+            .functions
+            .iter()
+            .find(|function| function.name == "test_only")
+            .unwrap();
+        assert_eq!(test_only.cfg, vec!["test"]);
+
+        let direct = s
+            .functions
+            .iter()
+            .find(|function| function.name == "direct_test")
+            .unwrap();
+        assert_eq!(direct.cfg, vec!["test"]);
+
+        let always = s
+            .functions
+            .iter()
+            .find(|function| function.name == "always")
+            .unwrap();
+        assert!(always.cfg.is_empty());
     }
 
     #[test]

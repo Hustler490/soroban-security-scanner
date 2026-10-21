@@ -26,16 +26,29 @@ pub const DEFAULT_IGNORED_DIRS: &[&str] = &[
 ];
 
 /// Options controlling discovery behavior.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct DiscoveryOptions {
     /// Whether to follow symbolic links. Defaults to `false`.
     pub follow_symlinks: bool,
     /// Glob patterns (relative to the scan root) to exclude.
     pub exclude: Vec<String>,
-    /// Skip test directories (any directory named `tests`).
+    /// Skip test directories (any directory named `tests`). Defaults to `true`;
+    /// set it to `false` to scan test-only code.
     pub exclude_tests: bool,
     /// Exclude source files marked as generated instead of marking them.
     pub exclude_generated: bool,
+}
+
+impl Default for DiscoveryOptions {
+    fn default() -> Self {
+        Self {
+            follow_symlinks: false,
+            exclude: Vec::new(),
+            // Test-only code is not shipped; skip it unless explicitly asked.
+            exclude_tests: true,
+            exclude_generated: false,
+        }
+    }
 }
 
 /// Files discovered during a scan.

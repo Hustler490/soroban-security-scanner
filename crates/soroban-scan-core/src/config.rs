@@ -172,7 +172,8 @@ pub struct ScanConfig {
     pub min_confidence: Confidence,
     /// Glob patterns (relative to the scan root) to exclude from discovery.
     pub exclude: Vec<String>,
-    /// Skip items gated behind `#[cfg(test)]` and test directories.
+    /// Skip items gated behind `#[cfg(test)]` and test directories. Defaults to
+    /// `true`; set it to `false` to include test-only code.
     pub exclude_tests: bool,
     /// Exclude files carrying generated-code markers instead of marking them.
     pub exclude_generated: bool,
@@ -194,7 +195,7 @@ impl Default for ScanConfig {
             min_severity: Severity::Info,
             min_confidence: Confidence::Low,
             exclude: Vec::new(),
-            exclude_tests: false,
+            exclude_tests: true,
             exclude_generated: false,
             follow_symlinks: false,
             minimum_soroban_sdk: "21.0.0".to_string(),

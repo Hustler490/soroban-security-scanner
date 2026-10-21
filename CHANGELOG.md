@@ -27,10 +27,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   dependency version, merged features, and default-feature setting while keeping
   `source = workspace` to record the inheritance (`#43`).
 
+### Changed
+
+- Skip `#[cfg(test)]` items and test directories by default. Use
+  `--include-tests` (or `exclude_tests = false`) to scan test-only code.
+
 ### Added
 
 - Add a hidden `completions <SHELL>` command for bash, zsh, fish, and
   PowerShell, generated from the same clap command definition as the CLI.
+- Record raw `cfg` predicates on inventoried items and functions without
+  evaluating them.
 - Add `.github/CODEOWNERS` for the rule engine, security-sensitive core
   modules, security/rule docs, and CI workflows.
 - Add a workspace layout and module dependency map, kept in sync with

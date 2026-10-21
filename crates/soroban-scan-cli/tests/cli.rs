@@ -1302,7 +1302,7 @@ fn config_validate_rejects_unknown_category() {
 }
 
 #[test]
-fn exclude_tests_skips_cfg_test_items_and_test_directories() {
+fn cfg_test_items_are_skipped_by_default_and_can_be_included() {
     let dir = std::env::temp_dir().join(format!("soroban-scan-cli-tests-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(dir.join("src")).unwrap();
@@ -1366,12 +1366,12 @@ impl T {
     let value: serde_json::Value = serde_json::from_str(&plain.stdout).unwrap();
     assert_eq!(
         rule_ids(&value["findings"]).len(),
-        4,
-        "test-only code must be scanned by default: {}",
+        1,
+        "test-only code must be skipped by default: {}",
         plain.stdout
     );
 
-    let excluded = run(&[
+    let included = run(&[
         "scan",
         dir.to_str().unwrap(),
         "--rule",
@@ -1380,16 +1380,16 @@ impl T {
         "json",
         "--fail-on",
         "none",
-        "--exclude-tests",
+        "--include-tests",
     ]);
-    assert_eq!(excluded.code, 0, "stderr: {}", excluded.stderr);
-    let value: serde_json::Value = serde_json::from_str(&excluded.stdout).unwrap();
+    assert_eq!(included.code, 0, "stderr: {}", included.stderr);
+    let value: serde_json::Value = serde_json::from_str(&included.stdout).unwrap();
     let findings = value["findings"].as_array().unwrap();
     assert_eq!(
         findings.len(),
-        1,
-        "only the non-test finding may remain: {}",
-        excluded.stdout
+        4,
+        "all findings, including test-only code, must be reported: {}",
+        included.stdout
     );
     assert!(findings[0]["location"]["file"]
         .as_str()
