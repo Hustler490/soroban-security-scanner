@@ -220,6 +220,8 @@ we'll help wire it up.
 ## How this project is run
 
 - **Maintainer:** [@Ayinkx](https://github.com/Ayinkx) (AyinkxLab).
+- **Governance:** roles, consensus, ADRs, and contentious-change handling are
+  described in [GOVERNANCE.md](GOVERNANCE.md).
 - **Contribution flow:** issues are scoped with difficulty labels and clear
   acceptance criteria; PRs are reviewed before merge. This project participates
   in open-source contribution waves via [Drips Wave](docs/WAVE.md).
@@ -245,7 +247,8 @@ we'll help wire it up.
 
 Contributions are welcome. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
 [contributor roadmap](docs/contributors/roadmap.md). Issues labelled
-`good first issue` and `help wanted` are a good place to begin.
+`good first issue` and `help wanted` are a good place to begin. Decisions and
+roles are described in [`GOVERNANCE.md`](GOVERNANCE.md).
 
 ## License
 

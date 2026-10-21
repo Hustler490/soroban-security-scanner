@@ -54,6 +54,7 @@ Start here.
 
 ## Maintainers
 
+- [Governance](../GOVERNANCE.md)
 - [Release Process](development/release.md)
 - [Upgrading](development/upgrading.md)
 - [Production Readiness Audit](development/audit.md)

@@ -10,6 +10,9 @@ By participating, you agree to abide by our
 
 ## Ways to contribute
 
+Decisions, roles, and the ADR process are described in
+[GOVERNANCE.md](GOVERNANCE.md).
+
 - **Report a bug** — open an issue using the bug report template.
 - **Request a feature** — open an issue using the feature request template.
 - **Propose or add a security rule** — see [`docs/rules/README.md`](docs/rules/README.md).
