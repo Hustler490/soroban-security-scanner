@@ -29,37 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add an editor integration (LSP) spike covering a minimal diagnostics provider,
-  core-library reuse, protocol scope, security, testing, and follow-up tasks
-  (`#168`).
-- Document the optional AI provider data flow, the exact data a provider
-  receives, exclusions, retention caveats, and offline alternatives, linked from
-  the AI guide (`#86`).
-- Function and non-function item inventory entries expose joined doc comments
-  (`///`, `//!`, and `#[doc = "..."]`) as `doc`, including multiline comments
-  (`#46`).
-- Every GitHub Actions reference is pinned to an immutable commit SHA with a
-  version comment, and Dependabot updates the pins weekly (`#54`).
-- `--log-level` emits structured JSON log lines to stderr (disabled by default);
-  stdout remains report-only, and logs never include source, secrets or home
-  paths (`#92`).
-- A CLI test validates a real JSON report against the published
-  `docs/integration/report.schema.json` (`#62`).
-- Module paths follow external `mod` declarations (`foo.rs` and `foo/mod.rs`)
-  and `#[path = "..."]`; targets escaping the crate root are rejected with
-  `SOURCE-003` (`#44`).
-- A weekly `cargo-mutants` workflow tracks assertion strength for the engine and
-  fingerprint modules, with an initial baseline in
-  `docs/development/mutation-testing.md` (`#68`).
-- Release artifacts now include a CycloneDX SBOM and a Linux binary with GitHub
-  build provenance attestation (`#56`).
-- A circuit breaker for the optional assistance layer: after
-  `ai.failure_threshold` consecutive provider failures (default `3`),
-  assistance is disabled for the remainder of the run and `AI-002` is printed.
-  The deterministic scan result is unchanged (`#89`).
-- Release notes are generated from the matching `CHANGELOG.md` section by
-  `tools/release_notes.py`; the publish workflow fails verification when no
-  section exists and creates/updates the GitHub release from it (`#91`).
+- Add a hidden `completions <SHELL>` command for bash, zsh, fish, and
+  PowerShell, generated from the same clap command definition as the CLI.
 - Add `.github/CODEOWNERS` for the rule engine, security-sensitive core
   modules, security/rule docs, and CI workflows.
 - Add a workspace layout and module dependency map, kept in sync with

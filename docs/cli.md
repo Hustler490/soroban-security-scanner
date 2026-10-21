@@ -17,6 +17,26 @@ soroban-scan <COMMAND>
 | `doctor` | Explain project classification, excludes, and effective configuration. |
 | `config show` / `config validate` | Inspect or validate configuration. |
 
+### Shell completions
+
+The hidden `completions <SHELL>` command prints a completion script for `bash`,
+`zsh`, `fish`, or `powershell`. It is omitted from the default help output so
+the primary command list stays focused.
+
+```bash
+# Bash (current session)
+source <(soroban-scan completions bash)
+
+# Zsh (write to a directory on $fpath)
+soroban-scan completions zsh > "${fpath[1]}/_soroban-scan"
+
+# Fish
+soroban-scan completions fish > ~/.config/fish/completions/soroban-scan.fish
+
+# PowerShell (dot-source in the current session)
+soroban-scan completions powershell | Out-String | Invoke-Expression
+```
+
 ---
 
 ## `scan`

@@ -97,6 +97,29 @@ fn run_in(dir: &Path, args: &[&str]) -> Output {
 }
 
 #[test]
+fn completions_generate_for_every_supported_shell() {
+    for shell in ["bash", "zsh", "fish", "powershell"] {
+        let out = run(&["completions", shell]);
+        assert_eq!(out.code, 0, "{shell}: {}", out.stderr);
+        assert!(
+            !out.stdout.trim().is_empty(),
+            "{shell}: completion output was empty"
+        );
+        assert!(
+            out.stdout.contains("soroban-scan"),
+            "{shell}: output does not contain the binary name"
+        );
+    }
+}
+
+#[test]
+fn completions_stay_out_of_default_help() {
+    let out = run(&["--help"]);
+    assert_eq!(out.code, 0, "{}", out.stderr);
+    assert!(!out.stdout.contains("completions"));
+}
+
+#[test]
 fn scan_piped_terminal_report_is_complete() {
     // A tiny threshold would page on a terminal, but stdout is a pipe here, so
     // the report must be written verbatim.

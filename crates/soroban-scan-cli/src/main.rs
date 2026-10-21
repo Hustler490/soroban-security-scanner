@@ -6,11 +6,13 @@
 //! * `2` — usage error (bad arguments, unknown rule, invalid configuration).
 //! * `3` — runtime error (I/O failure, unreadable scan root).
 
+use std::io;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::time::Instant;
 
-use clap::{Args, Parser, Subcommand, ValueEnum};
+use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum};
+use clap_complete::{generate, Shell};
 
 use soroban_scan_core::ai::{self, Assistant};
 use soroban_scan_core::baseline::{self, Baseline};
@@ -271,6 +273,9 @@ enum Command {
     Config(ConfigArgs),
     /// Diagnose project classification, exclusions, and effective configuration.
     Doctor(DoctorArgs),
+    /// Generate shell completion scripts (hidden from default help).
+    #[command(hide = true)]
+    Completions(CompletionsArgs),
 }
 
 #[derive(Debug, Args)]
@@ -484,6 +489,13 @@ enum DoctorFormatArg {
 }
 
 #[derive(Debug, Args)]
+struct CompletionsArgs {
+    /// Shell to generate a completion script for.
+    #[arg(value_enum)]
+    shell: Shell,
+}
+
+#[derive(Debug, Args)]
 struct ConfigArgs {
     #[command(subcommand)]
     command: ConfigCommand,
@@ -555,7 +567,14 @@ fn run(cli: Cli) -> CliResult<u8> {
         Command::Init(args) => run_init(args),
         Command::Config(args) => run_config(args),
         Command::Doctor(args) => run_doctor(args, &registry),
+        Command::Completions(args) => run_completions(args),
     }
+}
+
+fn run_completions(args: CompletionsArgs) -> CliResult<u8> {
+    let mut command = Cli::command();
+    generate(args.shell, &mut command, "soroban-scan", &mut io::stdout());
+    Ok(EXIT_SUCCESS)
 }
 
 fn run_scan(args: ScanArgs, registry: &RuleRegistry) -> CliResult<u8> {
